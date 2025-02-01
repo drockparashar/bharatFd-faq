@@ -1,21 +1,21 @@
-const axios = require("axios");
+const { Translate } = require("@google-cloud/translate").v2;
+const dotenv = require("dotenv");
 
-const TRANSLATION_API_URL = "https://api.mymemory.translated.net/get";
+dotenv.config(); // Load API key from .env file
+
+const translate = new Translate({ key: process.env.GOOGLE_API_KEY });
 
 const translateText = async (text, lang) => {
   try {
-    const response = await axios.get(TRANSLATION_API_URL, {
-      params: { q: text, langpair: `en|${lang}` },
-    });
-
-    return response.data.responseData.translatedText;
+    const [translation] = await translate.translate(text, lang);
+    return translation;
   } catch (error) {
-    console.error(`❌ Translation Error (${lang}):`, error.response?.data || error.message);
-    return null;
+    console.error(`❌ Google Translation Error (${lang}):`, error.message);
+    return text; // Fallback to original text
   }
 };
 
-// 🔄 Translate FAQ question & answer to multiple languages
+// 🌍 Translate both question & answer using Google API
 const translateFAQ = async ({ question, answer }) => {
   const languages = ["es", "fr", "de", "hi"];
 
